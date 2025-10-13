@@ -76,9 +76,22 @@ class CourseHandler:
                         ans_json = await f.read()
                     await websocket.send(ans_json)
                 else:
-                    logging.info("自动答题已禁用，跳过答题流程")
-                    # 发送空的答案响应
-                    await websocket.send(json.dumps([]))
+                    logging.info("自动答题已禁用，暂停脚本执行直到离开答题页面")
+                    # 保存当前页面URL用于检查
+                    current_url = self._driver.current_url
+                    # 等待用户离开答题页面
+                    while True:
+                        try:
+                            # 检查当前URL是否发生变化（用户是否离开答题页面）
+                            new_url = self._driver.current_url
+                            if new_url != current_url:
+                                logging.info("用户已离开答题页面，继续执行脚本")
+                                break
+                            # 每2秒检查一次
+                            await asyncio.sleep(2)
+                        except Exception as e:
+                            logging.error("检查页面URL时出错: %s", e)
+                            break
             else:
                 logging.info("收到非HTML消息: %s", data)
 
