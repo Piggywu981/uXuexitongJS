@@ -19,6 +19,7 @@ login_url = "https://passport2-api.chaoxing.com/login?fid=&refer=https://mooc1.c
 history_url = ""
 user_cookies = ""
 restore_cookies = true
+disable_auto_answer = false
 force_speed = false
 speed = 2.0
 

@@ -68,11 +68,17 @@ class CourseHandler:
                     await f.write(html_str)
                 logging.info("HTML已保存到 %s", que_path)
 
-                await answer_questions()
+                # 检查是否禁用自动答题
+                if not global_config.get("auto_course", {}).get("disable_auto_answer", False):
+                    await answer_questions()
 
-                async with aiofiles.open(ans_path, encoding="utf-8") as f:
-                    ans_json = await f.read()
-                await websocket.send(ans_json)
+                    async with aiofiles.open(ans_path, encoding="utf-8") as f:
+                        ans_json = await f.read()
+                    await websocket.send(ans_json)
+                else:
+                    logging.info("自动答题已禁用，跳过答题流程")
+                    # 发送空的答案响应
+                    await websocket.send(json.dumps([]))
             else:
                 logging.info("收到非HTML消息: %s", data)
 

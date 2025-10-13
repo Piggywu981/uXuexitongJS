@@ -277,6 +277,17 @@ Rectangle {
                     }
 
                     OptionBox {
+                        id: disableAutoAnswer;
+                        width: parent.width;
+                        option: "Disable Auto Answer";
+                        jobId: Interface.dispatch("get_config", ["auto_course", "disable_auto_answer"]);
+                        Component.onCompleted: {
+                            const chosen_text = Interface.getResult(jobId);
+                            disableAutoAnswer.chosen = (chosen_text === "True") ? true : false;
+                        }
+                    }
+
+                    OptionBox {
                         id: speed;
                         width: parent.width;
                         expand: true;
@@ -305,6 +316,7 @@ Rectangle {
                 anchors.horizontalCenter: parent.horizontalCenter;
                 onTask: {
                     Interface.dispatch("set_config", [["auto_course", "restore_cookies"], log.chosen]);
+                    Interface.dispatch("set_config", [["auto_course", "disable_auto_answer"], disableAutoAnswer.chosen]);
                     Interface.dispatch("set_config", [["auto_course", "force_speed"], speed.chosen]);
                     Interface.dispatch("set_config", [["auto_course", "speed"], Number(speed.value)]);
                     Interface.dispatch("refresh_settings", []);
