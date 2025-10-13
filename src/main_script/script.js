@@ -94,6 +94,17 @@ if (DEFAULT_TEST_OPTION === 1) {
     window._ws.onclose = function() {
         console.warn("WebSocket已关闭");
     };
+    window._ws.onmessage = function(event) {
+        try {
+            const data = JSON.parse(event.data);
+            if (data.type === 'skip_to_next_chapter') {
+                console.log('收到跳过答题指令，准备跳转到下一章节');
+                continueToNextChapter();
+            }
+        } catch (e) {
+            console.error('解析WebSocket消息失败:', e);
+        }
+    };
 }
 
 

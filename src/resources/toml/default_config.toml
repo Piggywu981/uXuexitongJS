@@ -20,6 +20,7 @@ history_url = ""
 user_cookies = ""
 restore_cookies = true
 disable_auto_answer = false
+skip_answer = false
 force_speed = false
 speed = 2.0
 

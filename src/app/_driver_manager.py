@@ -68,8 +68,17 @@ class CourseHandler:
                     await f.write(html_str)
                 logging.info("HTML已保存到 %s", que_path)
 
+                # 检查是否跳过答题（优先级高于禁用自动答题）
+                if global_config.get("auto_course", {}).get("skip_answer", False):
+                    logging.info("已开启跳过答题功能，直接跳转到下一章节")
+                    # 发送跳转到下一章节的消息
+                    try:
+                        await websocket.send(json.dumps({"type": "skip_to_next_chapter"}))
+                        logging.info("已发送跳转到下一章节的指令")
+                    except Exception as e:
+                        logging.error("发送跳转到下一章节指令失败: %s", e)
                 # 检查是否禁用自动答题
-                if not global_config.get("auto_course", {}).get("disable_auto_answer", False):
+                elif not global_config.get("auto_course", {}).get("disable_auto_answer", False):
                     await answer_questions()
 
                     async with aiofiles.open(ans_path, encoding="utf-8") as f:

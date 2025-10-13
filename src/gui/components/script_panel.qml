@@ -288,6 +288,17 @@ Rectangle {
                     }
 
                     OptionBox {
+                        id: skipAnswer;
+                        width: parent.width;
+                        option: "Skip Answer";
+                        jobId: Interface.dispatch("get_config", ["auto_course", "skip_answer"]);
+                        Component.onCompleted: {
+                            const chosen_text = Interface.getResult(jobId);
+                            skipAnswer.chosen = (chosen_text === "True") ? true : false;
+                        }
+                    }
+
+                    OptionBox {
                         id: speed;
                         width: parent.width;
                         expand: true;
@@ -317,6 +328,7 @@ Rectangle {
                 onTask: {
                     Interface.dispatch("set_config", [["auto_course", "restore_cookies"], log.chosen]);
                     Interface.dispatch("set_config", [["auto_course", "disable_auto_answer"], disableAutoAnswer.chosen]);
+                    Interface.dispatch("set_config", [["auto_course", "skip_answer"], skipAnswer.chosen]);
                     Interface.dispatch("set_config", [["auto_course", "force_speed"], speed.chosen]);
                     Interface.dispatch("set_config", [["auto_course", "speed"], Number(speed.value)]);
                     Interface.dispatch("refresh_settings", []);
