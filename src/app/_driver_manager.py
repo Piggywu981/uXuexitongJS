@@ -29,10 +29,21 @@ class CourseSettings:
     restore_cookies: bool
     force_speed: bool
     speed: float
+    enable_data_saving: bool
+    min_video_bitrate: bool
+    min_video_resolution: bool
+    reduce_preload_content: bool
+    limit_background_data: bool
+    optimize_image_quality: bool
+    compress_network_requests: bool
+    enable_audio: bool
+    stop_auto_mute: bool
 
 def load_settings() -> CourseSettings:
     """从 global_config 加载刷课相关设置"""
     ac_cfg: dict = global_config.get("auto_course", {})
+    ds_cfg: dict = global_config.get("data_saving", {})
+    audio_cfg: dict = global_config.get("audio_control", {})
     return CourseSettings(
         browser=ac_cfg.get("browser", ""),
         url={
@@ -43,6 +54,15 @@ def load_settings() -> CourseSettings:
         restore_cookies=ac_cfg.get("restore_cookies", True),
         force_speed=ac_cfg.get("force_speed", False),
         speed=ac_cfg.get("speed", 2.0),
+        enable_data_saving=ds_cfg.get("enable_data_saving", False),
+        min_video_bitrate=ds_cfg.get("min_video_bitrate", True),
+        min_video_resolution=ds_cfg.get("min_video_resolution", True),
+        reduce_preload_content=ds_cfg.get("reduce_preload_content", True),
+        limit_background_data=ds_cfg.get("limit_background_data", True),
+        optimize_image_quality=ds_cfg.get("optimize_image_quality", True),
+        compress_network_requests=ds_cfg.get("compress_network_requests", True),
+        enable_audio=audio_cfg.get("enable_audio", False),
+        stop_auto_mute=audio_cfg.get("stop_auto_mute", False),
     )
 
 class CourseHandler:
@@ -167,6 +187,15 @@ class CourseHandler:
             const LAUNCH_OPTION = 1;
             const FORCE_SPEED = {str(self._settings.force_speed).lower()};
             const SPEED = {self._settings.speed};
+            const ENABLE_DATA_SAVING = {str(self._settings.enable_data_saving).lower()};
+            const MIN_VIDEO_BITRATE = {str(self._settings.min_video_bitrate).lower()};
+            const MIN_VIDEO_RESOLUTION = {str(self._settings.min_video_resolution).lower()};
+            const REDUCE_PRELOAD_CONTENT = {str(self._settings.reduce_preload_content).lower()};
+            const LIMIT_BACKGROUND_DATA = {str(self._settings.limit_background_data).lower()};
+            const OPTIMIZE_IMAGE_QUALITY = {str(self._settings.optimize_image_quality).lower()};
+            const COMPRESS_NETWORK_REQUESTS = {str(self._settings.compress_network_requests).lower()};
+            const ENABLE_AUDIO = {str(self._settings.enable_audio).lower()};
+            const STOP_AUTO_MUTE = {str(self._settings.stop_auto_mute).lower()};
         """
         return "\n".join([options, main_script])
 
@@ -237,6 +266,24 @@ class CourseHandler:
         handles = self._driver.window_handles
         self._driver.switch_to.window(handles[-1])
         time.sleep(2)
+        
+        # 在注入脚本前检查并处理可能的对话框
+        try:
+            alert = self._driver.switch_to.alert
+            if alert:
+                logging.info("检测到确认对话框，内容: %s", alert.text)
+                # 根据对话框内容决定处理方式
+                if "开发者工具" in alert.text or "脚本" in alert.text:
+                    alert.dismiss()  # 关闭对话框
+                    logging.info("已关闭脚本相关的确认对话框")
+                else:
+                    alert.accept()  # 接受其他对话框
+                    logging.info("已接受确认对话框")
+                time.sleep(2)  # 等待对话框处理完成
+        except:
+            # 没有对话框，继续正常执行
+            pass
+        
         self._driver.execute_script(self._script_code)
         logging.info("js脚本注入成功")
 
@@ -244,16 +291,37 @@ class CourseHandler:
         """模拟鼠标活动, 防止被检测为挂机"""
         def mouse_action():
             while True:
-                handles = self._driver.window_handles
-                self._driver.switch_to.window(handles[-1])
+                try:
+                    handles = self._driver.window_handles
+                    self._driver.switch_to.window(handles[-1])
 
-                # 模拟鼠标滚轮轻微滚动(向下/向上)
-                scroll_value = secrets.randbelow(101) - 50  # -50 to 50
-                self._driver.execute_script(
-                    "window.scrollBy(0, arguments[0]);",
-                    scroll_value
-                )
-                time.sleep(secrets.randbelow(31) + 30)  # 30 to 60
+                    # 检查是否有确认对话框，如果有则处理
+                    try:
+                        alert = self._driver.switch_to.alert
+                        if alert:
+                            logging.info("检测到确认对话框，内容: %s", alert.text)
+                            # 根据对话框内容决定处理方式
+                            if "开发者工具" in alert.text or "脚本" in alert.text:
+                                alert.dismiss()  # 关闭对话框
+                                logging.info("已关闭脚本相关的确认对话框")
+                            else:
+                                alert.accept()  # 接受其他对话框
+                                logging.info("已接受确认对话框")
+                            time.sleep(2)  # 等待对话框处理完成
+                    except:
+                        # 没有对话框，继续正常执行
+                        pass
+
+                    # 模拟鼠标滚轮轻微滚动(向下/向上)
+                    scroll_value = secrets.randbelow(101) - 50  # -50 to 50
+                    self._driver.execute_script(
+                        "window.scrollBy(0, arguments[0]);",
+                        scroll_value
+                    )
+                    time.sleep(secrets.randbelow(31) + 30)  # 30 to 60
+                except Exception as e:
+                    logging.error("mouse_action执行出错: %s", e)
+                    time.sleep(10)  # 出错后等待10秒再重试
         self._mouse_thread = threading.Thread(target=mouse_action, daemon=True)
         self._mouse_thread.start()
 

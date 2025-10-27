@@ -24,6 +24,23 @@ skip_answer = false
 force_speed = false
 speed = 2.0
 
+# 流量节省配置
+
+[data_saving]
+enable_data_saving = false
+min_video_bitrate = true
+min_video_resolution = true
+reduce_preload_content = true
+limit_background_data = true
+optimize_image_quality = true
+compress_network_requests = true
+
+# 音频控制配置
+
+[audio_control]
+enable_audio = false
+stop_auto_mute = false
+
 # 颜色主题
 
 [theme]

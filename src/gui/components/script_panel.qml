@@ -313,6 +313,28 @@ Rectangle {
 
                         }
                     }
+
+                    OptionBox {
+                        id: dataSaving;
+                        width: parent.width;
+                        option: "Data Saving";
+                        jobId: Interface.dispatch("get_config", ["data_saving", "enable_data_saving"]);
+                        Component.onCompleted: {
+                            const chosen_text = Interface.getResult(jobId);
+                            dataSaving.chosen = (chosen_text === "True") ? true : false;
+                        }
+                    }
+
+                    OptionBox {
+                        id: enableAudio;
+                        width: parent.width;
+                        option: "Enable Audio";
+                        jobId: Interface.dispatch("get_config", ["audio_control", "enable_audio"]);
+                        Component.onCompleted: {
+                            const chosen_text = Interface.getResult(jobId);
+                            enableAudio.chosen = (chosen_text === "True") ? true : false;
+                        }
+                    }
                 }
             }
 
@@ -331,6 +353,8 @@ Rectangle {
                     Interface.dispatch("set_config", [["auto_course", "skip_answer"], skipAnswer.chosen]);
                     Interface.dispatch("set_config", [["auto_course", "force_speed"], speed.chosen]);
                     Interface.dispatch("set_config", [["auto_course", "speed"], Number(speed.value)]);
+                    Interface.dispatch("set_config", [["data_saving", "enable_data_saving"], dataSaving.chosen]);
+                    Interface.dispatch("set_config", [["audio_control", "enable_audio"], enableAudio.chosen]);
                     Interface.dispatch("refresh_settings", []);
                     saveBtn.currentJobId = Interface.dispatch("commit_config", []);
                 } 

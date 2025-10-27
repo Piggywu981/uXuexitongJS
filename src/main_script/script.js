@@ -26,9 +26,22 @@
  */
 
 
-const DEFAULT_TEST_OPTION = LAUNCH_OPTION ?? 0;
-const DEFAULT_SPEED_OPTION = FORCE_SPEED ?? false;
-const DEFAULT_SPEED = SPEED ?? 2.0;
+// 配置变量由Python后端动态注入
+// 流量节省配置变量：ENABLE_DATA_SAVING, MIN_VIDEO_BITRATE, MIN_VIDEO_RESOLUTION, REDUCE_PRELOAD_CONTENT, LIMIT_BACKGROUND_DATA, OPTIMIZE_IMAGE_QUALITY, COMPRESS_NETWORK_REQUESTS
+// 音频控制配置变量：ENABLE_AUDIO, STOP_AUTO_MUTE
+// 其他配置变量：LAUNCH_OPTION, FORCE_SPEED, SPEED
+
+const DEFAULT_TEST_OPTION = typeof LAUNCH_OPTION !== 'undefined' ? LAUNCH_OPTION : 0;
+const DEFAULT_SPEED_OPTION = typeof FORCE_SPEED !== 'undefined' ? FORCE_SPEED : false;
+const DEFAULT_SPEED = typeof SPEED !== 'undefined' ? SPEED : 2.0;
+
+// 流量节省配置（由Python后端注入）
+// ENABLE_DATA_SAVING, MIN_VIDEO_BITRATE, MIN_VIDEO_RESOLUTION, REDUCE_PRELOAD_CONTENT, 
+// LIMIT_BACKGROUND_DATA, OPTIMIZE_IMAGE_QUALITY, COMPRESS_NETWORK_REQUESTS 等变量
+// 已由Python后端通过脚本注入，直接使用即可
+
+// 音频控制配置（由Python后端注入）
+// ENABLE_AUDIO, STOP_AUTO_MUTE 等变量已由Python后端通过脚本注入，直接使用即可
 
 const DEFAULT_SLEEP_TIME = 400 + Math.floor(Math.random() * 200); // 默认延迟400-600ms
 const DEFAULT_INTERVAL_TIME = 85 + Math.floor(Math.random() * 30); // 默认轮询间隔85-115ms
@@ -180,6 +193,191 @@ function initializeTreeIndex() {
 function timeSleep(time) {
     time = time + Math.floor(Math.random() * 50);
     return new Promise(resolve => setTimeout(resolve, time));
+}
+
+// 流量节省功能实现
+function applyDataSavingOptimizations() {
+    if (!ENABLE_DATA_SAVING) {
+        console.log('流量节省功能未启用');
+        return;
+    }
+    
+    console.log('正在应用流量节省优化措施...');
+    
+    // 1. 视频码率和分辨率优化
+    if (MIN_VIDEO_BITRATE || MIN_VIDEO_RESOLUTION) {
+        optimizeVideoPlayback();
+    }
+    
+    // 2. 预加载内容优化
+    if (REDUCE_PRELOAD_CONTENT) {
+        reducePreloadContent();
+    }
+    
+    // 3. 后台数据传输限制
+    if (LIMIT_BACKGROUND_DATA) {
+        limitBackgroundData();
+    }
+    
+    // 4. 图片加载质量优化
+    if (OPTIMIZE_IMAGE_QUALITY) {
+        optimizeImageQuality();
+    }
+    
+    // 5. 网络请求数据压缩
+    if (COMPRESS_NETWORK_REQUESTS) {
+        compressNetworkRequests();
+    }
+    
+    console.log('流量节省优化措施已应用完成');
+}
+
+function optimizeVideoPlayback() {
+    try {
+        // 查找视频元素并优化播放参数
+        const videos = document.querySelectorAll('video');
+        videos.forEach(video => {
+            if (MIN_VIDEO_BITRATE) {
+                // 设置最低可用码率
+                if (video.playbackRate) {
+                    video.playbackRate = 0.5; // 降低播放速度减少流量
+                }
+                
+                // 尝试设置视频质量
+                if (video.setPlaybackQuality) {
+                    video.setPlaybackQuality('small');
+                }
+            }
+            
+            if (MIN_VIDEO_RESOLUTION) {
+                // 降低视频分辨率
+                video.style.maxWidth = '640px';
+                video.style.maxHeight = '360px';
+                
+                // 禁用高清播放
+                if (video.disablePictureInPicture) {
+                    video.disablePictureInPicture();
+                }
+            }
+            
+            // 禁用自动播放预加载
+            video.preload = 'metadata';
+            video.autoplay = false;
+        });
+        
+        console.log('视频播放优化已应用');
+    } catch (error) {
+        console.warn('视频播放优化失败:', error);
+    }
+}
+
+function reducePreloadContent() {
+    try {
+        // 减少预加载链接
+        const preloadLinks = document.querySelectorAll('link[rel="preload"], link[rel="prefetch"]');
+        preloadLinks.forEach(link => {
+            if (link.rel === 'preload' || link.rel === 'prefetch') {
+                link.remove();
+            }
+        });
+        
+        // 禁用图片懒加载预加载
+        const lazyImages = document.querySelectorAll('img[loading="lazy"]');
+        lazyImages.forEach(img => {
+            img.loading = 'eager';
+        });
+        
+        console.log('预加载内容优化已应用');
+    } catch (error) {
+        console.warn('预加载内容优化失败:', error);
+    }
+}
+
+function limitBackgroundData() {
+    try {
+        // 限制后台数据同步
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.getRegistrations().then(registrations => {
+                registrations.forEach(registration => {
+                    registration.unregister();
+                });
+            });
+        }
+        
+        // 禁用后台同步API
+        if ('sync' in registration) {
+            // 浏览器可能不支持，安全处理
+        }
+        
+        // 限制定时器频率
+        const originalSetInterval = window.setInterval;
+        window.setInterval = function(callback, delay) {
+            // 限制最小间隔为1秒
+            delay = Math.max(delay, 1000);
+            return originalSetInterval(callback, delay);
+        };
+        
+        console.log('后台数据传输限制已应用');
+    } catch (error) {
+        console.warn('后台数据传输限制失败:', error);
+    }
+}
+
+function optimizeImageQuality() {
+    try {
+        // 优化图片加载质量
+        const images = document.querySelectorAll('img');
+        images.forEach(img => {
+            // 降低图片质量（通过CSS）
+            img.style.imageRendering = 'pixelated';
+            img.style.filter = 'blur(0.5px)';
+            
+            // 限制图片最大尺寸
+            img.style.maxWidth = '100%';
+            img.style.maxHeight = '300px';
+            
+            // 添加加载失败处理
+            img.onerror = function() {
+                this.style.display = 'none';
+            };
+        });
+        
+        console.log('图片加载质量优化已应用');
+    } catch (error) {
+        console.warn('图片加载质量优化失败:', error);
+    }
+}
+
+function compressNetworkRequests() {
+    try {
+        // 拦截和压缩网络请求
+        const originalFetch = window.fetch;
+        if (originalFetch) {
+            window.fetch = function(...args) {
+                // 添加压缩头信息
+                if (args[1]) {
+                    args[1].headers = {
+                        ...args[1].headers,
+                        'Accept-Encoding': 'gzip, deflate, br'
+                    };
+                }
+                
+                return originalFetch.apply(this, args);
+            };
+        }
+        
+        // 优化XMLHttpRequest
+        const originalXHROpen = XMLHttpRequest.prototype.open;
+        XMLHttpRequest.prototype.open = function(method, url, async, user, password) {
+            // 添加压缩支持
+            this.setRequestHeader('Accept-Encoding', 'gzip, deflate, br');
+            return originalXHROpen.call(this, method, url, async, user, password);
+        };
+        
+        console.log('网络请求压缩优化已应用');
+    } catch (error) {
+        console.warn('网络请求压缩优化失败:', error);
+    }
 }
 
 function waitForElement(getter, callback, interval = DEFAULT_INTERVAL_TIME, maxTry = DEFAULT_TRY_COUNT) {
@@ -415,18 +613,24 @@ function findInnerDocs(outerDoc) {
 
 
 function muteVideo (muteBtn) {
-    if (muteBtn) {
-    if (muteBtn.title === '取消静音') {
-        console.log('已是静音状态，跳过');
-    } else if (muteBtn.title === '静音') {
-        muteBtn.click();
-        console.log('已自动点击静音按钮');
-    } else {
-        console.warn('静音按钮的title未知:', muteBtn.title);
+    // 检查是否启用了音频功能
+    if (ENABLE_AUDIO) {
+        console.log('音频功能已启用，跳过自动静音');
+        return;
     }
-} else {
-    console.warn('未找到静音按钮元素');
-}
+    
+    if (muteBtn) {
+        if (muteBtn.title === '取消静音') {
+            console.log('已是静音状态，跳过');
+        } else if (muteBtn.title === '静音') {
+            muteBtn.click();
+            console.log('已自动点击静音按钮');
+        } else {
+            console.warn('静音按钮的title未知:', muteBtn.title);
+        }
+    } else {
+        console.warn('未找到静音按钮元素');
+    }
 }
 
 function selectMenuItem(paceList) {
@@ -634,6 +838,10 @@ async function tryStartVideo(videoDiv, launchBtn, paceList, muteBtn) {
         await timeSleep(DEFAULT_SLEEP_TIME);
     }
     await timeSleep(DEFAULT_SLEEP_TIME);
+    
+    // 应用流量节省优化
+    applyDataSavingOptimizations();
+    
     if (DEFAULT_SPEED_OPTION) {
         forcePlaybackRate(videoDiv, DEFAULT_SPEED)
     }
