@@ -309,12 +309,19 @@ function limitBackgroundData() {
             // 浏览器可能不支持，安全处理
         }
         
-        // 限制定时器频率
-        const originalSetInterval = window.setInterval;
-        window.setInterval = function(callback, delay) {
-            // 限制最小间隔为1秒
+        // 保存原始setInterval
+        window.__originalSetInterval = window.__originalSetInterval || window.setInterval;
+        
+        // 自定义setInterval，但不影响章节跳转相关的定时器
+        window.setInterval = function(callback, delay, context) {
+            // 检查是否是章节跳转相关的定时器（通过context参数标识）
+            if (context === 'chapter_navigation') {
+                // 允许短间隔的定时器用于章节跳转
+                return window.__originalSetInterval(callback, delay);
+            }
+            // 其他定时器限制最小间隔为1秒
             delay = Math.max(delay, 1000);
-            return originalSetInterval(callback, delay);
+            return window.__originalSetInterval(callback, delay);
         };
         
         console.log('后台数据传输限制已应用');
@@ -399,7 +406,7 @@ function waitForElement(getter, callback, interval = DEFAULT_INTERVAL_TIME, maxT
             callback(el);
         } else if (tryCount < maxTry) {
             tryCount++;
-            setTimeout(tryFind, interval);
+            setTimeout(tryFind, interval, 'chapter_navigation');
         } else {
             callback(null);
         }
@@ -417,7 +424,11 @@ function continueToNextChapter() {
     nextLock = true;
     nextCooldown = true; // 进入冷却
 
-    // ...原有跳转逻辑...
+    // 记录当前页面URL，用于检测页面是否成功跳转
+    const currentUrl = window.location.href;
+    let pageLoadTimeout = null;
+    let pageLoadCheckCount = 0;
+    const maxPageLoadChecks = 30; // 最大检查次数（约30秒）
 
     // 跳转后冷却，比如5秒
     setTimeout(() => {
@@ -480,7 +491,11 @@ function continueToNextChapter() {
                     console.log('即将跳转到下一章节');
                     nextChapter.click();
                     console.log('已点击章节:', nextChapter.title);
-                    nextLock = false; 
+                    
+                    // 启动页面加载检测
+                    pageLoadTimeout = setTimeout(() => {
+                        checkPageLoadStatus(currentUrl);
+                    }, 3 * DEFAULT_SLEEP_TIME, 'chapter_navigation');
                 });
             } else {
                 confirm('未找到下一个课程节点, 可能是课程已全部完成或结构异常,脚本已退出');
@@ -499,26 +514,155 @@ function continueToNextChapter() {
     }
 }
 
+// 页面加载状态检测函数
+function checkPageLoadStatus(originalUrl) {
+    if (pageLoadCheckCount >= maxPageLoadChecks) {
+        console.warn('页面加载检测超时，尝试强制恢复');
+        handlePageLoadTimeout();
+        return;
+    }
+    
+    pageLoadCheckCount++;
+    
+    // 检查页面URL是否发生变化（表示页面已跳转）
+    if (window.location.href === originalUrl) {
+        console.log(`页面加载检测 ${pageLoadCheckCount}/${maxPageLoadChecks}: 页面尚未跳转`);
+        // 页面未跳转，继续检测
+        pageLoadTimeout = setTimeout(() => {
+            checkPageLoadStatus(originalUrl);
+        }, 2 * DEFAULT_SLEEP_TIME, 'chapter_navigation');
+        return;
+    }
+    
+    console.log('页面已跳转，开始检测页面加载状态');
+    
+    // 页面已跳转，检测页面内容是否加载完成
+    checkPageContentLoaded();
+}
+
+// 检测页面内容加载状态
+function checkPageContentLoaded() {
+    // 检查主要页面元素是否加载完成
+    const courseTree = document.getElementById('courseTree');
+    const mainContent = document.getElementById('mainContent');
+    
+    if (!courseTree && !mainContent) {
+        console.log(`页面内容检测 ${pageLoadCheckCount}/${maxPageLoadChecks}: 主要元素尚未加载`);
+        
+        if (pageLoadCheckCount >= maxPageLoadChecks) {
+            console.warn('页面内容加载超时，尝试强制恢复');
+            handlePageLoadTimeout();
+            return;
+        }
+        
+        pageLoadTimeout = setTimeout(() => {
+            checkPageContentLoaded();
+        }, 2 * DEFAULT_SLEEP_TIME, 'chapter_navigation');
+        return;
+    }
+    
+    console.log('页面内容已加载，开始检测iframe状态');
+    
+    // 页面内容已加载，开始检测iframe
+    checkIframeLoadStatus();
+}
+
+// 检测iframe加载状态
+function checkIframeLoadStatus() {
+    const outerDoc = findOuterDoc();
+    
+    if (!outerDoc) {
+        console.log(`iframe检测 ${pageLoadCheckCount}/${maxPageLoadChecks}: outerDoc尚未加载`);
+        
+        if (pageLoadCheckCount >= maxPageLoadChecks) {
+            console.warn('iframe加载超时，尝试强制恢复');
+            handlePageLoadTimeout();
+            return;
+        }
+        
+        pageLoadTimeout = setTimeout(() => {
+            checkIframeLoadStatus();
+        }, 2 * DEFAULT_SLEEP_TIME, 'chapter_navigation');
+        return;
+    }
+    
+    console.log('outerDoc已加载，页面加载完成');
+    
+    // 页面加载完成，释放锁并继续处理
+    nextLock = false;
+    
+    // 延迟一段时间后开始处理新章节
+    setTimeout(() => {
+        console.log('开始处理新章节内容');
+        handleIframeChange();
+    }, 3 * DEFAULT_SLEEP_TIME, 'chapter_navigation');
+}
+
+// 处理页面加载超时
+function handlePageLoadTimeout() {
+    console.warn('页面加载超时，尝试刷新页面恢复');
+    
+    // 清除超时检测
+    if (pageLoadTimeout) {
+        clearTimeout(pageLoadTimeout);
+        pageLoadTimeout = null;
+    }
+    
+    // 释放锁
+    nextLock = false;
+    
+    // 尝试刷新页面
+    setTimeout(() => {
+        console.log('尝试刷新页面恢复');
+        window.location.reload();
+    }, 5 * DEFAULT_SLEEP_TIME);
+}
+
 function findOuterDoc() {
     const outerIframe = document.getElementById(OUTER_IFRAME_ID);
-        if (!outerIframe) return null;
-        let outerDoc;
-        try {
-            outerDoc = outerIframe.contentDocument || outerIframe.contentWindow.document;
-        } catch (e) {
-            console.warn('跨域, 无法访问iframe内容');
-            return null;
-        }
-        if (!outerDoc) {
-            console.log('[调试] 未找到 outerDoc');
-            return null;
-        }
-        if (outerDoc.location.href === IFRAME_LOADING_URL) {
-            console.log('[调试] outerDoc 仍为 about:blank,等待加载');
-            return null;
-        }
-        console.log('已找到 outerDoc:', outerDoc);
-        return outerDoc;
+    if (!outerIframe) {
+        console.log('[调试] 未找到 outerIframe');
+        return null;
+    }
+    
+    // 检查iframe是否已加载完成
+    if (outerIframe.contentDocument === null) {
+        console.log('[调试] outerIframe contentDocument 为 null，iframe尚未加载');
+        return null;
+    }
+    
+    let outerDoc;
+    try {
+        outerDoc = outerIframe.contentDocument || outerIframe.contentWindow.document;
+    } catch (e) {
+        console.warn('跨域, 无法访问iframe内容');
+        return null;
+    }
+    
+    if (!outerDoc) {
+        console.log('[调试] 未找到 outerDoc');
+        return null;
+    }
+    
+    // 检查文档状态
+    if (outerDoc.readyState && outerDoc.readyState !== 'complete') {
+        console.log('[调试] outerDoc 尚未加载完成，状态:', outerDoc.readyState);
+        return null;
+    }
+    
+    if (outerDoc.location.href === IFRAME_LOADING_URL) {
+        console.log('[调试] outerDoc 仍为 about:blank,等待加载');
+        return null;
+    }
+    
+    // 检查是否有实际内容
+    if (outerDoc.body && outerDoc.body.children.length === 0) {
+        console.log('[调试] outerDoc 内容为空，等待加载');
+        return null;
+    }
+    
+    console.log('已找到 outerDoc，状态正常');
+    return outerDoc;
 }
 
 function findInnerDocs(outerDoc) {
@@ -528,12 +672,14 @@ function findInnerDocs(outerDoc) {
             iframe.src?.includes('ananas/modules/work')       // 满足 src 包含特定路径
     );
     const result = [];
-    console.log('开始核对');
+    console.log('开始核对，找到', innerIframes.length, '个innerIframes');
+    
     const needSkip = outerDoc.querySelectorAll('.ans-job-icon');
     if (needSkip?.length > 1 && innerIframes.length < needSkip.length) {
         console.warn('检测到测验题目数量小于课程内实际测验题目数量不符，将重新回调', needSkip.length, innerIframes.length);
         return null;
     }
+    
     innerIframes.forEach(innerIframe => {
         let Type = '';
         let innerDoc;
@@ -549,6 +695,12 @@ function findInnerDocs(outerDoc) {
             Type = 'Unknown';
         }
 
+        // 检查iframe是否已加载完成
+        if (innerIframe.contentDocument === null) {
+            console.log('[调试] innerIframe contentDocument 为 null，iframe尚未加载');
+            return null;
+        }
+
         // 获取 innerDoc
         try {
             innerDoc = innerIframe.contentDocument || innerIframe.contentWindow.document;
@@ -557,14 +709,28 @@ function findInnerDocs(outerDoc) {
                 throw new Error('innerDoc 未找到'); // 抛出异常，跳转到 catch
             }
 
+            // 检查文档状态
+            if (innerDoc.readyState && innerDoc.readyState !== 'complete') {
+                console.log('[调试] innerDoc 尚未加载完成，状态:', innerDoc.readyState);
+                throw new Error('innerDoc 加载中');
+            }
+
             if (innerDoc.location.href === IFRAME_LOADING_URL) {
                 console.log('[调试] innerDoc 仍为 about:blank, 等待加载');
                 throw new Error('innerDoc 加载中'); 
             }
+            
+            // 检查是否有实际内容
+            if (innerDoc.body && innerDoc.body.children.length === 0) {
+                console.log('[调试] innerDoc 内容为空，等待加载');
+                throw new Error('innerDoc 内容为空');
+            }
         } catch (e) {
-            console.warn('[备用] 跨域, 无法访问 iframe 内容');
+            console.warn('[备用] 无法访问 iframe 内容:', e.message);
             return null;
         }
+        
+        console.log('成功获取', Type, '类型的innerDoc');
         result.push({ innerDoc, Type });
     });
     if (result.length === 0) {
@@ -1215,12 +1381,24 @@ function answerFixes(testList, answerHistory) {
 async function handleIframeChange(prama = DEFAULT_TEST_OPTION) { 
     if (allTaskDown) return;
 
-
     if (handleIframeLock) {
         console.log('handleIframeChange 已加锁，跳过本次调用');
         return;
     }
     handleIframeLock = true;
+    
+    // 添加超时保护
+    const timeoutDuration = 120 * DEFAULT_SLEEP_TIME; // 约2分钟超时
+    let iframeChangeTimeout = setTimeout(() => {
+        console.warn('handleIframeChange 执行超时，强制释放锁');
+        handleIframeLock = false;
+        
+        // 尝试重新启动处理
+        setTimeout(() => {
+            console.log('超时后尝试重新处理');
+            handleIframeChange(prama);
+        }, 5 * DEFAULT_SLEEP_TIME, 'chapter_navigation');
+    }, timeoutDuration, 'chapter_navigation');
 
     // 唯一性控制，防止异步出bug（事实上确实会出很多bug）
     let firstLayerCancel = null;
@@ -1609,6 +1787,11 @@ async function handleIframeChange(prama = DEFAULT_TEST_OPTION) {
             }
         );
     })();
+    
+    // 清除超时定时器
+    clearTimeout(iframeChangeTimeout);
+    handleIframeLock = false;
+    console.log('handleIframeChange 处理完成');
 }
 
 function startScriptWithMask(mainFunc) { // 启动脚本并创建遮罩，因为只有用户主动激活主页面脚本才能正常运行
