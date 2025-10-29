@@ -424,11 +424,7 @@ function continueToNextChapter() {
     nextLock = true;
     nextCooldown = true; // 进入冷却
 
-    // 记录当前页面URL，用于检测页面是否成功跳转
-    const currentUrl = window.location.href;
-    let pageLoadTimeout = null;
-    let pageLoadCheckCount = 0;
-    const maxPageLoadChecks = 30; // 最大检查次数（约30秒）
+    // ...原有跳转逻辑...
 
     // 跳转后冷却，比如5秒
     setTimeout(() => {
@@ -491,11 +487,7 @@ function continueToNextChapter() {
                     console.log('即将跳转到下一章节');
                     nextChapter.click();
                     console.log('已点击章节:', nextChapter.title);
-                    
-                    // 启动页面加载检测
-                    pageLoadTimeout = setTimeout(() => {
-                        checkPageLoadStatus(currentUrl);
-                    }, 3 * DEFAULT_SLEEP_TIME, 'chapter_navigation');
+                    nextLock = false; 
                 });
             } else {
                 confirm('未找到下一个课程节点, 可能是课程已全部完成或结构异常,脚本已退出');
