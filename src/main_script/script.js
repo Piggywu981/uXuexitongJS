@@ -300,13 +300,13 @@ function limitBackgroundData() {
             navigator.serviceWorker.getRegistrations().then(registrations => {
                 registrations.forEach(registration => {
                     registration.unregister();
+                    
+                    // 禁用后台同步API（在registration作用域内）
+                    if ('sync' in registration) {
+                        // 浏览器可能不支持，安全处理
+                    }
                 });
             });
-        }
-        
-        // 禁用后台同步API
-        if ('sync' in registration) {
-            // 浏览器可能不支持，安全处理
         }
         
         // 保存原始setInterval
