@@ -436,14 +436,16 @@ function continueToNextChapter() {
 
     if (nextBtn) {
         if (nextBtn.style.display === 'none') {
-            confirm('课程已完成');
+            console.log('下一章按钮已隐藏，课程可能已完成');
             allTaskDown = true;
             nextLock = false;
             return;
         }
     } else {
+        console.warn('未找到下一章按钮，可能页面结构已变化或课程已完成');
+        allTaskDown = true;
         nextLock = false;
-        throw new Error('元素缺失, 已终止');
+        return;
     }
 
     findCourseTree(); //由于此时课程树有元素变化（主要是COURSE_TREE_NODE_CURRENT_FEATURE_CLASS），需要刷新
