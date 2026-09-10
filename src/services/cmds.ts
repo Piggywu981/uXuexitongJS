@@ -34,6 +34,10 @@ export const commands = {
 	setKey: (key: string) => __TAURI_INVOKE<null>("set_key", { key }),
 	/**  将内存中的全局配置持久化保存至本地文件。 */
 	saveConfig: () => __TAURI_INVOKE<null>("save_config"),
+	/**  带有渐隐过渡效果的应用窗口关闭指令。 */
+	close: () => __TAURI_INVOKE<void>("close"),
+	/**  应用窗口最小化处理指令。 */
+	minimize: () => __TAURI_INVOKE<void>("minimize"),
 	/**  显示主窗口并启动遮罩开屏动画。 */
 	startMask: () => __TAURI_INVOKE<null>("start_mask"),
 	/**  显示已在后台加载完成的主界面和超星 Webview。 */
@@ -48,10 +52,6 @@ export const commands = {
 	goForward: () => __TAURI_INVOKE<null>("go_forward"),
 	currentUrl: () => __TAURI_INVOKE<string | null>("current_url"),
 	reload: () => __TAURI_INVOKE<null>("reload"),
-	/**  带有渐隐过渡效果的应用窗口关闭指令。 */
-	close: () => __TAURI_INVOKE<void>("close"),
-	/**  应用窗口最小化处理指令。 */
-	minimize: () => __TAURI_INVOKE<void>("minimize"),
 };
 
 /* Types */

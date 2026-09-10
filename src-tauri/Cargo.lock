@@ -4787,6 +4787,7 @@ dependencies = [
  "base64 0.22.1",
  "chrono",
  "commands_collector",
+ "dirs",
  "dotenv",
  "fern",
  "flate2",

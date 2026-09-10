@@ -83,6 +83,7 @@ pub fn init(app: &mut tauri::App) -> std::result::Result<(), Box<dyn std::error:
     let monitor_pos = target_monitor.position();
 
     let window = WindowBuilder::new(app, "app")
+        .title("uxuescript")
         // maybe later vision would use this
         // .decorations(false)
         // .transparent(true)

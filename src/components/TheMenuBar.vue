@@ -10,6 +10,7 @@ defineProps<{
 
 const minimizeLock = ref(false);
 const closeLock = ref(false);
+const isMacOS = /Macintosh|Mac OS X/i.test(navigator.userAgent);
 
 const minimizeApp = async () => {
   if (minimizeLock.value) return;
@@ -32,12 +33,14 @@ const closeApp = async () => {
       {{ appTitle }}
     </div>
     <button
+      v-if="!isMacOS"
       type="button"
       @click="minimizeApp"
     >
       <MinimizeIcon class="icon" />
     </button>
     <button
+      v-if="!isMacOS"
       type="button"
       @click="closeApp"
     >
