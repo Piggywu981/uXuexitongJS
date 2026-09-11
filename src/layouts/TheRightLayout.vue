@@ -1,49 +1,34 @@
 <script setup lang="ts">
 import TheChaoxingWebviewController from "@/components/TheChaoxingWebviewController.vue";
 import TheCourseDashboard from "@/components/TheCourseDashboard.vue";
-
-defineProps<{
-  version: string;
-  author: string;
-}>();
 </script>
 
 <template>
   <div class="right-container">
-    <TheCourseDashboard />
-    <!--
-          Placeholder element for the Chaoxing WebView container.
-          Note: This element remains empty because Tauri's native child WebView window
-          is dynamically positioned and overlayed according to the layout bounds and
-          geometry of this placeholder (styled by .chaoxing-webview).
-
-          Scale-Invariant Proportional Layout Transformation Formulas:
-          - Position X = Window.width  * (0.50 + 0.01) = 0.51 * W
-          - Position Y = Window.height * (0.04 + 0.96 * 0.4375) = 0.46 * H
-          - Width      = Window.width  * 0.50 * 0.96 = 0.48 * W
-        -->
+    <TheCourseDashboard class="dashboard" />
     <div class="chaoxing-webview">
-      <TheChaoxingWebviewController />
-    </div>
-    <div class="version-info">
-      <p>by {{ author }} v{{ version }}</p>
+      <TheChaoxingWebviewController class="controller" />
     </div>
   </div>
 </template>
 
 <style scoped>
 .right-container {
-  width: 50%;
   display: flex;
   align-items: center;
   flex-direction: column;
   background-color: transparent;
 }
 
+.dashboard {
+  width: 96%;
+  height: 36vh;
+}
+
 .chaoxing-webview {
   position: relative;
-  width: 96%;
-  height: 55%;
+  width: 48vw;
+  height: 53vh;
 }
 
 .chaoxing-webview::after {
@@ -66,6 +51,11 @@ defineProps<{
     0 calc(100% - var(--t)),
     calc(100% - var(--t)) calc(100% - var(--t))
   );
+}
+
+.controller {
+  height: 5vh;
+  width: 100%;
 }
 
 .version-info {
