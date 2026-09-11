@@ -196,8 +196,6 @@ onUnmounted(() => {
 </template>
 <style scoped>
 .body {
-  width: 100%;
-  height: 9.09%;
   background-color: #0d58a4;
   display: flex;
   flex-direction: row;

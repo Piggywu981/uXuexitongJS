@@ -51,7 +51,6 @@ const closeApp = async () => {
 
 <style scoped>
 .menu-bar {
-  height: 4%;
   background-color: transparent;
   display: flex;
   flex-direction: row;
