@@ -6,41 +6,10 @@ use crate::core::{
 
 use anyhow::anyhow;
 use parking_lot::Mutex;
-use tauri::{LogicalPosition, LogicalSize, Manager, Url, Webview, WebviewBuilder, WebviewUrl};
+use tauri::{LogicalPosition, LogicalSize, Url, Webview, WebviewBuilder, WebviewUrl};
 
 #[derive(Default)]
 pub struct UrlStack(Mutex<(Vec<Url>, usize)>);
-
-fn chaoxing_geometry(
-    window: &tauri::Window,
-) -> Result<(LogicalPosition<f64>, LogicalSize<f64>), Box<dyn std::error::Error>> {
-    let logical_size: LogicalSize<f64> =
-        LogicalSize::from_physical(window.inner_size()?, window.scale_factor()?);
-
-    Ok((
-        LogicalPosition::new(logical_size.width * 0.51, logical_size.height * 0.46),
-        LogicalSize::new(logical_size.width * 0.48, logical_size.height * 0.48),
-    ))
-}
-
-/// 根据当前窗口内容区尺寸重新对齐超星原生 WebView。
-pub fn sync_chaoxing(window: &tauri::Window) -> Result<(), Box<dyn std::error::Error>> {
-    let Some(webview) = window.get_webview("chaoxing") else {
-        return Ok(());
-    };
-    let (position, size) = chaoxing_geometry(window)?;
-
-    webview.set_position(position)?;
-    webview.set_size(size)?;
-    log::debug!(
-        "重新同步超星WebView几何 - 位置: ({}, {}), 大小: ({}x{})",
-        position.x,
-        position.y,
-        size.width,
-        size.height
-    );
-    Ok(())
-}
 
 impl UrlStack {
     pub fn push(&self, url: Url) {
@@ -100,21 +69,37 @@ pub fn init_on(window: &tauri::Window, label: &str) -> Result<Webview, Box<dyn s
                 .background_color((0, 0, 0, 0).into())
                 .devtools(cfg!(debug_assertions)),
             LogicalPosition::new(0.0, 0.0),
-            LogicalSize::new(logical_size.width, logical_size.height),
+            logical_size,
         ),
         "mask" => (
             WebviewBuilder::new(label, WebviewUrl::App("mask.html".into()))
                 .background_color((0, 0, 0, 0).into())
                 .devtools(true),
             LogicalPosition::new(0.0, 0.0),
-            LogicalSize::new(logical_size.width, logical_size.height),
+            logical_size,
         ),
         "chaoxing" => (
             WebviewBuilder::new(
                 label,
                 WebviewUrl::External(CONFIG.metadata.home_url.clone()),
             )
-        }
+            .background_color((242, 244, 247).into())
+            .devtools(true)
+            .initialization_script_for_all_frames(include_str!("../scripts/iframe-init.js"))
+            .on_navigation(|url| {
+                log::debug!("检测到页面导航: {}", url);
+                classify(url) != Type::Unknown
+            })
+            .on_page_load(load_on),
+            // 齐次比例布局变换公式 (Scale-Invariant Proportional Layout Formulas):
+            // X_pos = W * 0.51  <= 50% (TheLeftLayout 占据左半屏) + 1% (TheRightLayout 内 96% 居中边距)
+            // Y_pos = H * 0.46 <= 4% (TheMenuBar) + 38.75% * 96% (TheCourseDashboard)
+            //              + 9.09% * 55% * 96% (TheChaoxingWebviewController)
+            // W_size = W * 0.48 <= 96% * 50% (TheRightLayout 容器宽度)
+            // H_size = H * 0.48 <= 90.91% * 55% * 96% (controller 之后的 WebView)
+            LogicalPosition::new(logical_size.width * 0.51, logical_size.height * 0.46),
+            LogicalSize::new(logical_size.width * 0.48, logical_size.height * 0.48),
+        ),
         _ => return Err(anyhow!("未知的Webview标签").into()),
     };
 
