@@ -54,7 +54,7 @@ onMounted(async () => {
       />
       <VToggle
         v-model="options.muteWebview"
-        label="Mute Course Webview"
+        label="Mute Course"
       />
       <VToggle
         v-model="options.speedLock"
@@ -65,7 +65,7 @@ onMounted(async () => {
         v-model.number="speedValue"
         placeholder="input number here"
         label="Playing Speed"
-        aria-label="Playing Speed"
+        aria-label=""
         pattern="\d+(?:\.\d*)?"
         class="speed-input"
         @change="setOptions"
