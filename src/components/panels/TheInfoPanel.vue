@@ -13,7 +13,7 @@ const openIssues = async () => {
 <template>
   <div class="guide-panel">
     <h1 class="title">User Guide</h1>
-    <div class="guide-content">
+    <div class="guide-content custom-scrollbar">
       <p>
         使用前，请在 Configuration 中选择适合的模型供应商与模型，并填写 API
         Key。
@@ -44,6 +44,8 @@ const openIssues = async () => {
 <style scoped>
 .guide-panel {
   display: flex;
+  justify-content: center;
+  align-items: center;
   flex-direction: column;
 }
 
@@ -58,8 +60,8 @@ const openIssues = async () => {
 }
 
 .guide-content {
-  height: 40%;
-  flex: 1;
+  height: 60%;
+  width: 90%;
   display: flex;
   flex-direction: column;
   text-align: center;

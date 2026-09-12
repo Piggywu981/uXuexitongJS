@@ -62,8 +62,8 @@ onUnmounted(() => {
       class="input-section"
     >
       <div
-        ref="triggerRef"
         :id="id"
+        ref="triggerRef"
         class="select-trigger"
         :class="{ 'is-open': isOpen }"
         @click="isOpen = !isOpen"
@@ -93,7 +93,7 @@ onUnmounted(() => {
           class="select-dropdown-wrapper"
           :style="{ '--option-height': optionHeight }"
         >
-          <div class="select-dropdown">
+          <div class="select-dropdown custom-scrollbar">
             <div
               v-for="(opt, index) in options"
               :key="index"
@@ -209,19 +209,6 @@ onUnmounted(() => {
 .select-option.is-selected {
   background-color: #0d58a4;
   color: #ffffff;
-}
-
-.select-dropdown::-webkit-scrollbar {
-  width: 5px;
-}
-
-.select-dropdown::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.select-dropdown::-webkit-scrollbar-thumb {
-  background-color: #0b4c8d;
-  border-radius: 0px;
 }
 
 /* 下拉菜单缓动动画 */

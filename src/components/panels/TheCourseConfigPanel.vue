@@ -51,14 +51,17 @@ onMounted(async () => {
       <VToggle
         v-model="options.persistSession"
         label="Perisist Session"
+        class="option"
       />
       <VToggle
         v-model="options.muteWebview"
         label="Mute Course"
+        class="option"
       />
       <VToggle
         v-model="options.speedLock"
-        label="Lock Playing Speed"
+        label="Lock Playspeed"
+        class="option"
       />
       <VInput
         id="playing-speed-input"
@@ -67,7 +70,7 @@ onMounted(async () => {
         label="Playing Speed"
         aria-label=""
         pattern="\d+(?:\.\d*)?"
-        class="speed-input"
+        class="option speed-input"
         @change="setOptions"
       />
     </div>
@@ -79,31 +82,27 @@ onMounted(async () => {
   height: 100%;
   flex: 1;
   flex-direction: column;
+
   display: flex;
 }
 
 .settings-container {
   flex: 1;
   display: flex;
-  gap: 16px;
+  gap: 4%;
   flex-direction: column;
 }
 
 .title {
   display: flex;
-  height: 48px;
+  height: 20%;
   font-size: 1.5rem;
   align-items: center;
   justify-content: center;
 }
 
-:deep(.base-config-select:first-child .select-dropdown-wrapper) {
-  z-index: 20;
-}
-
-/* Model 下拉菜单 z-index 低一点 */
-:deep(.base-config-select:nth-child(2) .select-dropdown-wrapper) {
-  z-index: 19;
+.option {
+  height: 22%;
 }
 
 .speed-input :deep(.input-field) {

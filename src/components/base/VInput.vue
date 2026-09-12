@@ -46,6 +46,7 @@ const emit = defineEmits(["update:modelValue", "change"]);
 <style scoped>
 .base-config-input {
   display: flex;
+  justify-content: center;
   align-items: center;
   width: 100%;
 }

@@ -204,8 +204,8 @@ onUnmounted(() => {
 }
 
 .navigation {
-  width: 18%;
-  height: 90%;
+  width: 22.5%;
+  height: 100%;
   display: flex;
   gap: 5px;
   flex-direction: row;
@@ -248,7 +248,7 @@ onUnmounted(() => {
 
 .capsule-slot {
   height: 75%;
-  width: 70%;
+  flex: 1;
   background: linear-gradient(135deg, #e8dcc4 0%, #f0ebe0 100%);
   border-radius: 999px;
   display: flex;
@@ -262,7 +262,7 @@ onUnmounted(() => {
 
 .title {
   font-size: larger;
-  width: 12.5%;
+  width: 15%;
   color: #ebe2cf;
   display: flex;
   align-items: center;

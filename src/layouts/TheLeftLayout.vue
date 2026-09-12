@@ -18,7 +18,7 @@ import TheInfoPanel from "@/components/panels/TheInfoPanel.vue";
 }
 
 .info-panel {
-  height: 45%;
+  height: 47.5%;
 }
 
 .config-panel {

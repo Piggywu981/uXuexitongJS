@@ -52,7 +52,7 @@ const saveConfig = async () => {
 }
 
 .title {
-  height: 15%;
+  height: 10%;
   width: 100%;
   font-size: 2rem;
   display: flex;
@@ -73,7 +73,7 @@ const saveConfig = async () => {
 }
 
 .save-button {
-  height: 15%;
+  height: 20%;
   display: flex;
   align-items: center;
   justify-content: center;

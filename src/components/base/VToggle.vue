@@ -215,7 +215,6 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   width: 100%;
-  height: 48px;
 }
 
 .input-section {
@@ -239,12 +238,13 @@ onUnmounted(() => {
   position: relative;
 
   /* 基础尺寸与颜色 */
-  --size: 40px;
+  --size: 80%;
   --color: #0d58a4;
-  --ball-size: 24px;
+  --ball-size: 60%;
 
   width: var(--size);
-  height: var(--size);
+  aspect-ratio: 1;
+  height: auto;
   color: var(--color); /* 传导给 SVG 的 scaleColor */
 }
 
@@ -277,8 +277,8 @@ onUnmounted(() => {
   );
   border-radius: 50%;
   visibility: hidden;
-  left: calc((var(--size) - var(--ball-size)) / 2);
-  top: calc((var(--size) - var(--ball-size)) / 2);
+  left: calc((100% - var(--ball-size)) / 2);
+  top: calc((100% - var(--ball-size)) / 2);
 }
 
 .bowl-toggle:hover .bowl-ring,
