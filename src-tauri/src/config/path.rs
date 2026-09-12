@@ -2,6 +2,17 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::path::PathBuf;
 
+#[derive(Deserialize)]
+struct TauriConfig {
+    identifier: String,
+}
+
+fn app_identifier() -> String {
+    serde_json::from_str::<TauriConfig>(include_str!("../../tauri.conf.json"))
+        .expect("无法解析 tauri.conf.json")
+        .identifier
+}
+
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(default)]
 pub struct PathsConfig {
@@ -11,13 +22,9 @@ pub struct PathsConfig {
 
 impl Default for PathsConfig {
     fn default() -> Self {
-        let cwd = std::env::current_dir().unwrap_or_else(|_| PathBuf::from("."));
-        let base_dir = if cfg!(debug_assertions) {
-            cwd.parent().unwrap_or(&cwd)
-        } else {
-            &cwd
-        };
-        let data_dir = base_dir.join("uxs-data");
+        let data_dir = dirs::data_dir()
+            .map(|dir| dir.join(app_identifier()))
+            .unwrap_or_else(|| PathBuf::from(".").join("uxs-data"));
 
         Self {
             dirs: HashMap::from([

@@ -2,8 +2,12 @@ use super::webview;
 
 use crate::config::CONFIG;
 
+use anyhow::Result;
 use std::time::Duration;
-use tauri::{image::Image, window::Window, Emitter, Manager, WindowBuilder};
+use tauri::{
+    image::Image, webview::Webview, window::Window, Emitter, LogicalPosition, LogicalSize, Manager,
+    PhysicalSize, WindowBuilder, WindowEvent,
+};
 
 /// 执行窗口关闭前的应用状态刷新与持久化收尾工作
 async fn flush_app_state() {
@@ -38,16 +42,43 @@ async fn close(window: Window) {
     window.destroy().ok();
 }
 
+fn resize(webview: &Webview, size: LogicalSize<f64>) -> Result<()> {
+    let (pos, size) = match webview.label() {
+        "chaoxing" => (
+            LogicalPosition::new(size.width * 0.51, size.height * 0.46),
+            LogicalSize::new(size.width * 0.48, size.height * 0.48),
+        ),
+        _ => (LogicalPosition::new(0.0, 0.0), size),
+    };
+    webview.set_position(pos)?;
+    webview.set_size(size)?;
+    Ok(())
+}
+
+fn resize_webviews(window: &Window, size: PhysicalSize<u32>) -> Result<()> {
+    let size: LogicalSize<f64> = LogicalSize::from_physical(size, window.scale_factor()?);
+    let webviews = window.webviews();
+    for webview in webviews {
+        resize(&webview, size)?;
+    }
+    Ok(())
+}
+
 /// 负责在接收到关闭请求时阻止默认销毁的窗口事件处理。
 pub fn listener(window: &tauri::Window, event: &tauri::WindowEvent) {
     log::debug!("监听到窗口事件: {:?}", event);
     match event {
-        tauri::WindowEvent::CloseRequested { api, .. } => {
+        WindowEvent::CloseRequested { api, .. } => {
             api.prevent_close();
             tauri::async_runtime::spawn(close(window.clone()));
         }
-        tauri::WindowEvent::Destroyed => {
+        WindowEvent::Destroyed => {
             log::debug!("主程序窗口已销毁，应用已关闭");
+        }
+        WindowEvent::Resized(physical_size) => {
+            if let Err(e) = resize_webviews(window, *physical_size) {
+                log::error!("Resize时出现错误：{}", e);
+            }
         }
         _ => {}
     }
@@ -83,6 +114,7 @@ pub fn init(app: &mut tauri::App) -> std::result::Result<(), Box<dyn std::error:
     let monitor_pos = target_monitor.position();
 
     let window = WindowBuilder::new(app, "app")
+        .title("uxuescript")
         // maybe later vision would use this
         // .decorations(false)
         // .transparent(true)

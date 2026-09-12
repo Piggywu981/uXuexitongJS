@@ -23,8 +23,14 @@ const saveConfig = async () => {
   <div class="setting-panel">
     <h1 class="title">Configuration</h1>
     <div class="info-panel">
-      <TheAPIPanel ref="apiPanelRef" />
-      <TheCourseConfigPanel ref="courseConfigPanelRef" />
+      <TheAPIPanel
+        ref="apiPanelRef"
+        class="api-panel"
+      />
+      <TheCourseConfigPanel
+        ref="courseConfigPanelRef"
+        class="course-config-panel"
+      />
     </div>
     <div
       class="save-button"
@@ -41,7 +47,7 @@ const saveConfig = async () => {
 
 <style scoped>
 .setting-panel {
-  flex: 1;
+  display: flex;
   flex-direction: column;
 }
 
@@ -49,18 +55,21 @@ const saveConfig = async () => {
   height: 10%;
   width: 100%;
   font-size: 2rem;
-  margin-bottom: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .info-panel {
-  height: 55%;
-  flex: 1;
+  height: 70%;
+  width: 100%;
   display: flex;
-  gap: 16px;
   flex-direction: row;
+}
+
+.api-panel {
+  width: 50%;
+  height: 100%;
 }
 
 .save-button {

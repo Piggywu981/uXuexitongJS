@@ -140,6 +140,7 @@ body {
   font-family: "DefaultFont", Inter, Avenir, Helvetica, Arial, sans-serif;
   font-size: 2rem;
   font-weight: 400;
+  line-height: 48px;
 }
 
 .closing {
@@ -164,7 +165,7 @@ body {
 }
 
 .revealing .title {
-  top: 2vh;
+  top: 2.5vh;
   opacity: 1;
   transform: translate(-50%, -50%) scale(1);
 }
@@ -192,7 +193,7 @@ body {
 
 @keyframes title-to-menu {
   to {
-    top: 2vh;
+    top: 2.5vh;
     opacity: 1;
     transform: translate(-50%, -50%) scale(1);
   }

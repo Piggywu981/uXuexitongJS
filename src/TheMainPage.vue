@@ -66,4 +66,17 @@ textarea {
   font-family: inherit;
   font-size: inherit;
 }
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 5px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: #0b4c8d;
+  border-radius: 0;
+}
 </style>

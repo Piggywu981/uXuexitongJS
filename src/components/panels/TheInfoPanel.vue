@@ -13,9 +13,10 @@ const openIssues = async () => {
 <template>
   <div class="guide-panel">
     <h1 class="title">User Guide</h1>
-    <div class="guide-content">
+    <div class="guide-content custom-scrollbar">
       <p>
-        使用前，请在 Configuration 中选择适合的模型供应商与模型，并填写 API Key。
+        使用前，请在 Configuration 中选择适合的模型供应商与模型，并填写 API
+        Key。
       </p>
       <p>
         随后前往右下角的课程页面，登录并打开目标课程；在弹窗中确认后即可启动。
@@ -28,7 +29,11 @@ const openIssues = async () => {
       </p>
       <p>
         作者并非学习通长期用户，测试课程资源有限，部分特殊课程尚未充分验证，可能存在兼容性问题。若更新至最新版本后问题仍未解决，欢迎在
-        <a href="https://github.com/unraous/uxuescript/issues" @click.prevent="openIssues">GitHub Issues</a>
+        <a
+          href="https://github.com/unraous/uxuescript/issues"
+          @click.prevent="openIssues"
+          >GitHub Issues</a
+        >
         提交反馈，或联系作者：
         <a href="mailto:unraous@qq.com">unraous@qq.com</a>。
       </p>
@@ -38,9 +43,9 @@ const openIssues = async () => {
 
 <style scoped>
 .guide-panel {
-  flex: 1;
-  height: 100%;
   display: flex;
+  justify-content: center;
+  align-items: center;
   flex-direction: column;
 }
 
@@ -55,8 +60,8 @@ const openIssues = async () => {
 }
 
 .guide-content {
-  height: 40%;
-  flex: 1;
+  height: 60%;
+  width: 90%;
   display: flex;
   flex-direction: column;
   text-align: center;

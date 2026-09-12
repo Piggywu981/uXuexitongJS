@@ -67,11 +67,13 @@ watch(model, async () => {
     <div class="settings-container">
       <VSelector
         v-model="provider"
+        class="selector"
         label="Provider"
         :options="providers"
       />
       <VSelector
         v-model="model"
+        class="selector"
         label="Model"
         :options="models"
       />
@@ -79,6 +81,7 @@ watch(model, async () => {
         id="api-key-input"
         v-model="apiKey"
         label="API Key"
+        class="selector"
         aria-label="API Key"
         mask-on-blur
         @change="setKey"
@@ -90,22 +93,26 @@ watch(model, async () => {
 <style scoped>
 .api-panel {
   width: 50%;
-  height: 100%;
   flex: 1;
-  flex-direction: column;
   display: flex;
+  flex-direction: column;
 }
 
 .settings-container {
   flex: 1;
+  height: 80%;
   display: flex;
-  gap: 48px;
+  gap: 18%;
   flex-direction: column;
+}
+
+.selector {
+  height: 24%;
 }
 
 .title {
   display: flex;
-  height: 48px;
+  height: 20%;
   font-size: 1.5rem;
   align-items: center;
   justify-content: center;
@@ -119,5 +126,4 @@ watch(model, async () => {
 :deep(.base-config-select:nth-child(2) .select-dropdown-wrapper) {
   z-index: 19;
 }
-
 </style>

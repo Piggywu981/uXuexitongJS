@@ -17,9 +17,11 @@ const { label, for: htmlFor } = defineProps<{
 <style scoped>
 .label-text {
   flex-shrink: 0;
-  width: 35%; /* 固定的标签宽度 */
+  width: 40%; /* 固定的标签宽度 */
   text-align: center;
-
+  display: flex;
+  justify-content: center;
+  align-items: center;
   font-size: 1.25rem;
   color: #0d58a4;
   letter-spacing: 1px;

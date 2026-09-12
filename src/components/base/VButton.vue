@@ -57,7 +57,7 @@ const buttonStyle = computed(() => ({
     ref="buttonRef"
     :type="type"
     class="base-button"
-    :class="[`variant-${variant}`]"
+    :class="[`variant-${variant}`, { 'shape-circle': shape === 'circle' }]"
     :disabled="disabled"
     :style="buttonStyle"
     @pointerdown="onPointerDown"
@@ -85,6 +85,8 @@ const buttonStyle = computed(() => ({
 
 <style scoped>
 .base-button {
+  width: 100%;
+  height: 100%;
   border: none;
   border-radius: 999px;
   cursor: pointer;
@@ -98,6 +100,11 @@ const buttonStyle = computed(() => ({
     opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1),
     filter 0.25s ease,
     box-shadow 0.3s ease;
+}
+
+.base-button.shape-circle {
+  aspect-ratio: 1;
+  flex: 0 0 auto;
 }
 
 .base-button:not(:disabled):hover {

@@ -143,9 +143,6 @@ onUnmounted(() => {
 
 <style scoped>
 .dashboard {
-  flex: 1;
-  width: 96%;
-  height: 38.75%;
   display: flex;
   flex-direction: column;
 }
