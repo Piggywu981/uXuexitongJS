@@ -6,7 +6,7 @@ import TheInfoPanel from "@/components/panels/TheInfoPanel.vue";
 <template>
   <div class="left-container">
     <TheInfoPanel class="info-panel" />
-    <TheConfigLayout />
+    <TheConfigLayout class="config-panel" />
   </div>
 </template>
 
@@ -19,6 +19,9 @@ import TheInfoPanel from "@/components/panels/TheInfoPanel.vue";
 
 .info-panel {
   height: 45%;
-  background-color: transparent;
+}
+
+.config-panel {
+  height: 50%;
 }
 </style>
