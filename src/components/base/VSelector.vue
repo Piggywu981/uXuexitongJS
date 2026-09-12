@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, useId } from "vue";
+import { onMounted, onUnmounted, ref, useId } from "vue";
 import VLabel from "./VLabel.vue";
 
 const {
@@ -20,6 +20,9 @@ const emit = defineEmits<{
 
 const isOpen = ref(false);
 const dropdownRef = ref<HTMLElement | null>(null);
+const triggerRef = ref<HTMLElement | null>(null);
+const optionHeight = ref("48px");
+let triggerResizeObserver: ResizeObserver | undefined;
 
 const handleClickOutside = (event: MouseEvent) => {
   if (dropdownRef.value && !dropdownRef.value.contains(event.target as Node)) {
@@ -28,6 +31,23 @@ const handleClickOutside = (event: MouseEvent) => {
 };
 
 onMounted(() => document.addEventListener("click", handleClickOutside));
+
+onMounted(() => {
+  if (!triggerRef.value) return;
+
+  const updateOptionHeight = () => {
+    optionHeight.value = `${triggerRef.value?.getBoundingClientRect().height ?? 48}px`;
+  };
+
+  triggerResizeObserver = new ResizeObserver(updateOptionHeight);
+  triggerResizeObserver.observe(triggerRef.value);
+  updateOptionHeight();
+});
+
+onUnmounted(() => {
+  document.removeEventListener("click", handleClickOutside);
+  triggerResizeObserver?.disconnect();
+});
 </script>
 
 <template>
@@ -42,6 +62,7 @@ onMounted(() => document.addEventListener("click", handleClickOutside));
       class="input-section"
     >
       <div
+        ref="triggerRef"
         :id="id"
         class="select-trigger"
         :class="{ 'is-open': isOpen }"
@@ -70,6 +91,7 @@ onMounted(() => document.addEventListener("click", handleClickOutside));
         <div
           v-show="isOpen"
           class="select-dropdown-wrapper"
+          :style="{ '--option-height': optionHeight }"
         >
           <div class="select-dropdown">
             <div
@@ -96,21 +118,31 @@ onMounted(() => document.addEventListener("click", handleClickOutside));
   display: flex;
   align-items: center;
   width: 100%;
+  min-width: 0;
 }
 
 .input-section {
-  flex-grow: 1;
+  flex: 1 1 0;
+  width: 0;
+  min-width: 0;
+  height: 100%;
   position: relative;
 }
 
 .select-trigger,
 .select-option {
-  height: 48px;
+  height: 100%;
+  width: 100%;
+  box-sizing: border-box;
   padding: 0 12px;
   display: flex;
   align-items: center;
   cursor: pointer;
   user-select: none;
+}
+
+.select-option {
+  height: var(--option-height);
 }
 
 .select-trigger {
@@ -148,15 +180,18 @@ onMounted(() => document.addEventListener("click", handleClickOutside));
   top: 100%;
   left: 0;
   right: 0;
+  width: 100%;
   z-index: 10;
   overflow: hidden;
 }
 
 .select-dropdown {
+  width: 100%;
+  box-sizing: border-box;
   background-color: #ebe2cf;
   border: 2px solid #0d58a4;
   border-top: none;
-  max-height: 192px;
+  max-height: 175px;
   overflow-y: auto;
   box-shadow: 0 6px 16px rgba(13, 88, 164, 0.15);
 }
@@ -202,6 +237,6 @@ onMounted(() => document.addEventListener("click", handleClickOutside));
 
 .dropdown-enter-to,
 .dropdown-leave-from {
-  max-height: 194px !important;
+  max-height: 175px !important;
 }
 </style>

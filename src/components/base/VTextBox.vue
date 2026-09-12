@@ -61,7 +61,7 @@ const onInput = (event: Event) => {
 
 .input-field {
   width: 100%;
-  height: 48px;
+  height: 100%;
   padding: 0 12px;
   background-color: var(--bg-color); /* 给输入框一个底色，增强实体感 */
   color: var(--brand-color);

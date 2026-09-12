@@ -26,6 +26,7 @@ const emit = defineEmits(["update:modelValue", "change"]);
   <div class="base-config-input">
     <!-- 仅保留文本标签，设定固定宽度以确保右侧输入框对齐 -->
     <VLabel
+      class="label"
       :label="label"
       :for="id"
     />
@@ -49,7 +50,12 @@ const emit = defineEmits(["update:modelValue", "change"]);
   width: 100%;
 }
 
+.label {
+  height: 100%;
+}
+
 .input-section {
+  height: 100%;
   flex-grow: 1;
 }
 </style>
