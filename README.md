@@ -142,19 +142,17 @@ flowchart LR
 
 ## 支持的 AI 模型供应商
 
-在桌面客户端中，点击左侧 **Configuration** 即可配置并一键切换以下主流模型供应商：
+在桌面客户端 **Configuration** 中支持直接选择并配置以下供应商：
 
-| 供应商 (Provider) | 默认接入协议 | 支持特性 |
-| :--- | :--- | :--- |
-| **DeepSeek** | OpenAI Chat Completions | 官方与第三方 API 接入，支持深度思考与高速推理 |
-| **OpenAI** | OpenAI Chat Completions / Responses | GPT-4o, GPT-4o-mini 等全系列模型 |
-| **Google Gemini** | Google Gemini Native API | Gemini 1.5 Pro, Flash 等系列 |
-| **Moonshot (Kimi)** | OpenAI Chat Completions | 长文本理解与大容量题干上下文 |
-| **智谱 BigModel** | OpenAI Chat Completions | GLM 系列模型 |
-| **OpenRouter** | OpenAI Chat Completions | 汇聚全球数十种开源与商业模型 |
-| **本地 Ollama** | 本地 HTTP API | 纯本地离线运行，客户端支持一键拉取本地已装模型列表 |
+- DeepSeek
+- OpenAI
+- Google Gemini
+- Moonshot (Kimi)
+- 智谱 BigModel
+- OpenRouter
+- 本地 Ollama
 
-> 完整配置与 API Key 安全保存说明详见[智能答题指南](docs/usage/ai.md)。
+> 详细配置见[智能答题指南](docs/usage/ai.md)。
 
 ## 快速开始
 
