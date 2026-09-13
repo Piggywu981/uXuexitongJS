@@ -725,7 +725,7 @@
     console.info("本章节处理完毕");
   };
 
-  const neutralizeAntiCheating = () => {
+  const preserveFocusState = () => {
     const blockedEvents = [
       "blur",
       "focusout",
@@ -811,7 +811,7 @@
       await emit.cancelled();
       return;
     }
-    neutralizeAntiCheating();
+    preserveFocusState();
     await emit.started();
     const chapterList = chapterNodes(document).filter((node) => {
       const status = chapterNodeStatus(node);
