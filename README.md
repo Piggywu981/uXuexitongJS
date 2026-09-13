@@ -57,18 +57,18 @@ uXueScript 是面向学习通网页版课程的轻量级自动化辅助客户端
 
 ## 双运行模式对比
 
-| 功能特性 | 桌面客户端模式 (Tauri + Vue) | 独立脚本模式 (`core.js`) |
-| :--- | :---: | :---: |
-| **执行环境** | 内嵌桌面 WebView | 任意现代浏览器控制台 (Console) |
-| **环境依赖** | 无需额外运行时 (解压即用) | 需自行登录并手动注入脚本 |
-| **视频自动播放 / 静音 / 倍速** | 支持 (本地配置记忆与锁定) | 支持 (默认 2.0x 倍速与静音) |
-| **PDF / 文档阅读自动滚动** | 支持 | 支持 |
-| **后台运行 / 失焦防暂停守护** | 支持 | 支持 |
-| **课程章节自动连续流转** | 支持 | 支持 |
-| **课程元数据与仪表盘监控** | 支持 (实时章节图表与进度展示) | 仅浏览器控制台日志输出 |
-| **`font-cxsecret` 混淆字体还原** | 支持 (内置 TrueType 矢量逆向解析) | 需后端配合 (独立模式不支持) |
-| **大模型测验自动求解与回填** | 支持 (多 Provider / 多题型适配) | 需后端配合 (独立模式不支持) |
-| **登录状态与会话保持** | 支持 (本地存储持久化) | 取决于当前浏览器 Cookies |
+| 功能特性                         |   桌面客户端模式 (Tauri + Vue)    |    独立脚本模式 (`core.js`)    |
+| :------------------------------- | :-------------------------------: | :----------------------------: |
+| **执行环境**                     |         内嵌桌面 WebView          | 任意现代浏览器控制台 (Console) |
+| **环境依赖**                     |     无需额外运行时 (解压即用)     |    需自行登录并手动注入脚本    |
+| **视频自动播放 / 静音 / 倍速**   |     支持 (本地配置记忆与锁定)     |  支持 (默认 2.0x 倍速与静音)   |
+| **PDF / 文档阅读自动滚动**       |               支持                |              支持              |
+| **后台运行 / 失焦防暂停守护**    |               支持                |              支持              |
+| **课程章节自动连续流转**         |               支持                |              支持              |
+| **课程元数据与仪表盘监控**       |   支持 (实时章节图表与进度展示)   |     仅浏览器控制台日志输出     |
+| **`font-cxsecret` 混淆字体还原** | 支持 (内置 TrueType 矢量逆向解析) |  需后端配合 (独立模式不支持)   |
+| **大模型测验自动求解与回填**     |  支持 (多 Provider / 多题型适配)  |  需后端配合 (独立模式不支持)   |
+| **登录状态与会话保持**           |       支持 (本地存储持久化)       |    取决于当前浏览器 Cookies    |
 
 > 独立脚本详细执行指引见[无后端模式文档](docs/backend-free.md)。
 
@@ -133,6 +133,7 @@ flowchart LR
 ```
 
 ### 核心数据与控制管线：
+
 1. **页面识别与脚本注入管线**：课程 WebView 发生导航时，[`core::url`](file:///Users/plochirm/Workspace/uxuescript/src-tauri/src/core/url.rs) 对 URL 特征进行精确分类；页面 `PageLoad::Finished` 后，由 [`core::script`](file:///Users/plochirm/Workspace/uxuescript/src-tauri/src/core/script.rs) 将单文件自包含的 [`core.js`](file:///Users/plochirm/Workspace/uxuescript/src-tauri/src/scripts/core.js) 动态注入至页面主框架。
 2. **混淆字体逆向与解密管线**：章节测验触发时，前端抓取页面 DOM 传至后端的 [`solve_quiz`](file:///Users/plochirm/Workspace/uxuescript/src-tauri/src/commands/chaoxing.rs)；[`typr.rs`](file:///Users/plochirm/Workspace/uxuescript/src-tauri/src/core/quiz/typr.rs) 解析 TTF 的 `loca` 与 `glyf` 表提取二次贝塞尔曲线轮廓，比对哈希特征字典 [`table.json`](file:///Users/plochirm/Workspace/uxuescript/src-tauri/src/core/quiz/table.json) 将加密文字无损还原为明文。
 3. **高并发与弹性 LLM 分发管线**：明文题目进入 [`dispatcher.rs`](file:///Users/plochirm/Workspace/uxuescript/src-tauri/src/core/quiz/llm/dispatcher.rs) 后以 5 题为一组进行 Chunk 切片，通过 `tokio::sync::Semaphore` 进行 10 路并发控制；遇到 HTTP 429 速率限制时自动解析 `Retry-After` 头并启动指数退避重试。
@@ -160,15 +161,16 @@ flowchart LR
 
 1. 前往 [Releases 页面](https://github.com/unraous/uxuescript/releases/latest) 下载对应系统的发行压缩包并解压。
 2. 双击启动 `uxuescript`。
-3. 在右下方内嵌 WebView 中登录学习通，进入目标课程与待学章节。
-4. 页面识别加载后，点击课程页弹出的确认提示即可启动自动化任务。
-5. *(可选)* 若需启用智能答题，先在左侧 **Configuration** 中配置 **Provider**、**Model** 与 **API Key** 并点击 **Save**。
+3. 在左侧 **Configuration** 中配置 **Provider**、**Model** 与 **API Key** 并点击 **Save**。
+4. 在右下方内嵌 WebView 中登录学习通，进入目标课程与待学章节。
+5. 页面识别加载后，点击课程页弹出的确认提示即可启动自动化任务。
 
 详细操作与图文流程参见[桌面端使用指南](docs/usage/desktop.md)。
 
 ### 方式二：从源码构建
 
 开发与构建前请确保本机已配置以下环境：
+
 - [Node.js](https://nodejs.org/) (>= 18) 与 [pnpm](https://pnpm.io/)
 - [Rust](https://www.rust-lang.org/) (>= 1.97) 与 Cargo
 - 操作系统对应的 [Tauri 2 构建前置依赖](https://v2.tauri.app/start/prerequisites/)
@@ -209,6 +211,7 @@ pnpm tauri build
 ## 反馈与贡献
 
 欢迎提交 Issue 与 Pull Request 共同改进项目：
+
 - 遇到 Bug 或页面不兼容，请在 [GitHub Issues](https://github.com/unraous/uxuescript/issues) 提交包含复现步骤、课程类型与控制台报错日志的反馈。
 - 也可以通过邮件与作者联系：<unraous@qq.com>。
 
