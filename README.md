@@ -11,7 +11,6 @@
 
 <p align="center">
   <a href="https://github.com/unraous/uxuescript/releases/latest"><img src="https://img.shields.io/github/v/release/unraous/uxuescript?style=flat-square&label=Release" alt="Latest release"></a>
-  <img src="https://img.shields.io/badge/Windows%20%E5%8F%91%E8%A1%8C%E5%8C%85-~6%E2%80%937%20MB-2563eb?style=flat-square" alt="Windows package size about 6 to 7 MB">
   <img src="https://img.shields.io/badge/Rust-1.97.1-DEA584?style=flat-square&logo=rust&logoColor=white" alt="Rust 1.97.1">
   <img src="https://img.shields.io/badge/Tauri-2.11-24C8DB?style=flat-square&logo=tauri&logoColor=white" alt="Tauri 2.11">
   <img src="https://img.shields.io/badge/Vue-3.5-42B883?style=flat-square&logo=vuedotjs&logoColor=white" alt="Vue 3.5">
@@ -78,70 +77,59 @@ uXueScript 是面向学习通网页版课程的轻量级自动化辅助客户端
 系统遵循严格的分层解耦架构与渐进增强契约，整体由 **前端展示层 (Vue 3)**、**Tauri 2 / Rust 宿主核心**、**内嵌自动化沙箱 (`core.js`)** 与 **外部服务生态** 协同构成：
 
 ```mermaid
-flowchart TB
-    %% 外部服务与模型生态
-    subgraph External["外部服务与模型生态"]
-        CXServer["超星学习通服务器<br/>(mooc1 / mooc2 / passport2)"]
-        LLMCloud["各大 LLM 供应商 API<br/>(DeepSeek / OpenAI / Gemini / 智谱 等)"]
-        OllamaLocal["本地 Ollama 服务<br/>(http://localhost:11434)"]
+flowchart LR
+    subgraph UI [前端展示层 Vue 3]
+        Dashboard[课程看板与配置面板<br/>状态订阅与参数管理]
+        Controls[WebView 控制栏<br/>URL导航与缩放调节]
+        Mask[动画遮罩层<br/>启动与退出过渡]
     end
 
-    %% 前端展示与交互层
-    subgraph Frontend["前端展示与交互层 (Vue 3 + TS)"]
-        MainView["主控制面板 (TheMainPage.vue)<br/>- 课程看板、控制栏与配置面板"]
-        MaskView["动画遮罩层 (TheMaskPage.vue)<br/>- 启动开场动画与淡出退出"]
-        SpectaClient["类型安全 IPC 客户端 (cmds.ts)"]
+    subgraph Backend [Rust / Tauri 2 宿主核心]
+        MacroHandler[命令路由中心<br/>commands_collector]
+        WindowEngine[窗口与比例布局<br/>齐次几何自适应]
+        Injector[页面识别与注入<br/>特征分类与动态调度]
+        QuizEngine[测验逆向解密<br/>TTF轮廓解析与码表还原]
+        LLMDispatcher[LLM 并发分发器<br/>分块限流与429退避]
     end
 
-    %% Rust / Tauri 2 宿主与调度核心
-    subgraph Backend["Rust / Tauri 2 宿主与调度核心"]
-        MacroHandler["编译期命令分发器 (commands_collector)"]
-        WindowEngine["窗口几何管理 (app::window / webview)<br/>- 齐次比例自适应布局与历史栈"]
-        RouteEngine["页面分类与脚本调度 (core::url / script)<br/>- 页面特征识别与动态 eval 注入"]
-        ConfigStore["纯 DTO 配置管理 (config)<br/>- API Key 脱敏与运行参数持久化"]
-        FontParser["字体逆向引擎 (typr.rs 与 mapper.rs)<br/>- TTF 轮廓解析与码表哈希还原"]
-        LLMDispatcher["LLM 并发分发器 (dispatcher.rs)<br/>- 题目切片、信号量限流与 429 重试"]
+    subgraph WebviewContext [内嵌课程运行环境]
+        CoreJS[core.js 自动化引擎<br/>单文件自包含契约]
+        StateGuard[后台与失焦守护<br/>保持聚焦活跃态]
+        TaskExec[课程任务执行器<br/>视频倍速/文档滚动/答题]
+        CourseDOM[超星课程页面 DOM]
     end
 
-    %% 内嵌课程运行环境
-    subgraph WebviewContext["内嵌课程运行环境 (Webview: 'chaoxing')"]
-        CoreEngine["core.js 自动化引擎 (自包含单文件)"]
-        StateGuard["后台运行与失焦守护<br/>- 拦截失焦打断并保持聚焦活跃态"]
-        DOMWalker["DOM 穿透探测器<br/>- 章节树遍历与多层嵌套 iframe 穿透"]
-        TaskPipeline["任务执行步进器<br/>- 视频倍速锁定、PDF 滚动与富文本答题"]
-        CourseDOM["超星课程页面 DOM"]
+    subgraph Services [外部服务生态]
+        CXServer[超星学习通服务器]
+        LLMService[主流大模型 API<br/>DeepSeek / OpenAI / Gemini]
+        OllamaService[本地 Ollama 服务]
     end
 
-    %% 通信与数据流向
-    MainView --> SpectaClient
-    SpectaClient <-->|Tauri IPC| MacroHandler
-    MaskView <-->|窗口事件通知| MacroHandler
+    Dashboard -->|Tauri IPC| MacroHandler
+    Controls -->|Tauri IPC| MacroHandler
+    Mask -->|窗口事件| MacroHandler
 
     MacroHandler --> WindowEngine
-    MacroHandler --> RouteEngine
-    MacroHandler --> ConfigStore
-    MacroHandler --> FontParser
+    MacroHandler --> Injector
+    MacroHandler --> QuizEngine
     MacroHandler --> LLMDispatcher
 
-    WindowEngine -.->|齐次比例几何贴合与缩放| CourseDOM
-    RouteEngine ==>|页面加载完成后动态注入| CoreEngine
+    WindowEngine -->|几何比例对齐| CourseDOM
+    Injector -->|页面加载后动态注入| CoreJS
 
-    CoreEngine --> StateGuard
-    CoreEngine --> DOMWalker
-    DOMWalker --> TaskPipeline
-    TaskPipeline <-->|交互操作与完成监听| CourseDOM
+    CoreJS --> StateGuard
+    CoreJS --> TaskExec
+    TaskExec <-->|操作与完成监听| CourseDOM
+    CourseDOM <-->|加载课程资源| CXServer
 
-    TaskPipeline -->|1. 提取加密 HTML 题目 (solve_quiz)| MacroHandler
-    MacroHandler -->|调用解析| FontParser
-    FontParser -->|还原明文题目| LLMDispatcher
-    LLMDispatcher <==>|HTTP POST 推理请求| LLMCloud
-    LLMDispatcher <==>|本地 HTTP API| OllamaLocal
-    LLMDispatcher -->|2. 返回结构化答案| TaskPipeline
-
-    TaskPipeline -.->|3. 提交任务进度 (send_status)| MacroHandler
-    MacroHandler -.->|status-update 事件广播| MainView
-
-    CourseDOM <==>|加载课程与音视频资源| CXServer
+    TaskExec -->|1. 提取加密题目| QuizEngine
+    QuizEngine -->|2. 还原明文题干| LLMDispatcher
+    LLMDispatcher -->|3. 推理请求| LLMService
+    LLMDispatcher -->|3. 本地推理| OllamaService
+    LLMService -->|4. 返回答案| LLMDispatcher
+    OllamaService -->|4. 返回答案| LLMDispatcher
+    LLMDispatcher -->|5. 下发结构化答案| TaskExec
+    TaskExec -->|6. 广播任务进度| Dashboard
 ```
 
 ### 核心数据与控制管线：
